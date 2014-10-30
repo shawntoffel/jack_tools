@@ -3,6 +3,7 @@ import sys
 import os
 import shutil
 import glob
+import subprocess
 
 try:
 	import configparser
@@ -24,7 +25,6 @@ else:
 CONFIG = {
 	'src' : 'SourceDirectory',
 	'dest' : 'OutputDirectory',
-	'c_loc' : 'CompilerLocation',
 	'c_run' : 'CompilerRunCommand'
 }
 
@@ -46,52 +46,63 @@ class ConfigReader:
 # FileManager
 
 class FileManager:
+	def __init__(self):
+		pass
 
-	def getFiles(self, location):
-		return glob.glob(location)
+	def getFiles(self, location, filetype = "*"):
+		return [f for f in os.listdir(location) if f.endswith(filetype)]
 
-	def cleanDir(self, location):
-		for f in self.getFiles(location) : os.remove(f)
+	def removeDir(self, location):
+		shutil.rmtree(location)
+
+	def cleanDir(self, location, filetype="*"):
+		for f in self.getFiles(location, filetype) : os.remove(os.path.join(location, f))
 
 	def copyJackToDest(self, src, dest):
 		if os.path.exists(dest) :
-			fm.cleanDir(dest)
+			self.cleanDir(dest)
 		else:
 			os.makedirs(dest)
 
-		for f in self.getFiles(src):
-				shutil.copy(f, dest)
-
+		for f in self.getFiles(src, ".jack"):
+			shutil.copy2(os.path.join(src, f), dest)
 
 ##########
+# Builder
+
+class Builder:
+	def __init__(self, env, config):
+		reader = ConfigReader(env)
+		self.fm = FileManager()
+
+		self.src = reader.getKey(config.get('src'))
+		self.dest = reader.getKey(config.get('dest'))
+		self.c_run= reader.getKey(config.get('c_run'))
+
+	def _prepare(self):
+		self.fm.copyJackToDest(self.src, self.dest)
+
+	def _build(self):
+		# blindly run compiler command
+		os.system(self.c_run + ' ../../' + self.dest)
+
+	def _clean(self):
+		self.fm.cleanDir(self.dest, ".jack")
+
+	def run(self):
+		self._prepare()
+		self._build()
+		self._clean()
+	
+##########
 # Main
-
-def _prepare(reader):
-	fm = FileManager()
-
-	src = reader.getKey(CONFIG.get('src'))
-	dest = reader.getKey(CONFIG.get('dest'))
-
-	fm.copyJackToDest(src, dest)
-
-
-def _build(reader):
-	c_loc = reader.getKey(CONFIG.get('c_loc'))
-	c_run = reader.getKey(CONFIG.get('c_run'))
-	dest = reader.getKey(CONFIG.get('dest'))
-
-	print c_run + ' ' + dest
-
-def run(reader):
-	_prepare(reader)
-	_build(reader)
 
 def main():
 	try:
 		
-		reader = ConfigReader(ENV)
+		builder = Builder(ENV, CONFIG)
 
-		run(reader)
+		builder.run()
 
 	except KeyboardInterrupt:
 		sys.exit(0)
