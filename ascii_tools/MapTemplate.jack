@@ -1,0 +1,27 @@
+// This is a template file
+
+class Map {
+
+	field int numPoints;
+
+	constructor Map new()
+	{
+		return this;
+	}
+
+
+	// data will be inserted into this method
+	method Array getData() {
+		var Array data, temp;
+
+		%yield
+			
+		return data;
+
+	}
+
+	method int getNumPoints() {
+		return numPoints;
+	}
+
+}
