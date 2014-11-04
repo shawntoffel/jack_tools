@@ -1,4 +1,4 @@
-// This is a template file
+// This is a generated file
 
 class Map {
 
@@ -8,7 +8,6 @@ class Map {
 	{
 		return this;
 	}
-
 
 	// data will be inserted into this method
 	method Array getData() {
