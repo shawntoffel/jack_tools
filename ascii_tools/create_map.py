@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/python2
 
 import os
 import sys
@@ -10,6 +10,7 @@ NUM_ARVS = 4
 if len(sys.argv) is not NUM_ARVS:
 	print E_USAGE
 	sys.exit(2)
+
 TEMPLATE = os.path.normpath(sys.argv[1])
 INPUT = os.path.normpath(sys.argv[2])
 OUTPUT = os.path.normpath(sys.argv[3])
